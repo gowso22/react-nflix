@@ -3,6 +3,7 @@ import ReactDOM from 'react-dom/client';
 import App from './App';
 import { ThemeProvider, createGlobalStyle } from 'styled-components';
 import { theme } from './Theme';
+import { QueryClient, QueryClientProvider } from 'react-query';
 
 const Globalstyle = createGlobalStyle`
 
@@ -73,11 +74,14 @@ a{
 }
 `;
 
+const client = new QueryClient();
 const root = ReactDOM.createRoot(document.getElementById('root') as HTMLElement);
 root.render(
-<ThemeProvider theme={theme}>
-  <Globalstyle/>
-  <App />
-</ThemeProvider>
+<QueryClientProvider client={client}>
+  <ThemeProvider theme={theme}>
+    <Globalstyle/>
+    <App />
+  </ThemeProvider>
+</QueryClientProvider>
 );
 
