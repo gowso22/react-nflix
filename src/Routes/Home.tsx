@@ -82,9 +82,17 @@ const SliderBtn = styled(motion.button)<{isRight : boolean}>`
   z-index: 2;
 `;
 const Info = styled(motion.div)`
-  padding: 20px;
-  background-color: ${(props) => props.theme.black.lighter};
+  position: absolute;
+  padding: 10px;
+  background-color: rgba(0,0,0,0.5);
   opacity: 0;
+  width: 100%;
+  bottom: 0;
+  color: ${(props) => props.theme.white.darker};;
+  h4{
+    text-align: center;
+    font-size: 15px;
+  }
 `;
 
 const rowVars = {
@@ -115,7 +123,11 @@ const boxVars = {
 }
 const infoVars = {
   hover : {
-    opacity : 1
+    opacity : 1,
+    transition : {
+      delay : 0.5,
+      type : "tween",
+    }
   }
 }
 
@@ -203,7 +215,9 @@ function Home(){
                                whileHover="hover"
                                initial = "normal"
                                >
-                            <Info variants={infoVars}/>
+                            <Info variants={infoVars}>
+                              <h4>{movie.title}</h4>
+                            </Info>
                           </Box>
                         ))
                       }
