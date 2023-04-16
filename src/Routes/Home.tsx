@@ -1,9 +1,10 @@
 import {useQuery} from 'react-query'
 import { IGetMoviesResult, getMovies } from '../api';
 import styled from 'styled-components';
-import { motion, AnimatePresence, delay } from 'framer-motion';
+import { motion, AnimatePresence } from 'framer-motion';
 import { makeImagePath } from '../utils';
 import { useState } from 'react';
+import { PathMatch, useMatch, useNavigate } from 'react-router-dom';
 
 const Wrapper = styled.div`
   background: black;
@@ -60,6 +61,7 @@ const Box = styled(motion.div)<{bgPhoto : string}>`
   background-size: cover;
   background-position: center center;
   border-radius: 5px;
+  cursor: pointer;
   &:first-child{
     transform-origin : center left;
   }
@@ -93,6 +95,46 @@ const Info = styled(motion.div)`
     text-align: center;
     font-size: 15px;
   }
+`;
+const Overlay = styled(motion.div)`
+  position: fixed;
+  top: 0;
+  width: 100%;
+  height: 100%;
+  background-color: rgba(0, 0, 0, 0.7);
+  opacity: 0;
+`
+
+const DetailMovie = styled(motion.div)`
+  position: fixed;
+  width: 60vw;
+  height: 70vh;
+  background-color: white;
+  top: 0;
+  bottom: 0;
+  left: 0;
+  right: 0;
+  margin: auto;
+  background-color: ${props => props.theme.black.lighter};
+`;
+const DetailCover = styled.img`
+  width : 100%;
+  height : 500px;
+  background-position: center center;
+  background-size: cover;
+`;
+const DetailTitle = styled.h3`
+  color: ${props => props.theme.white.lighter};
+  text-align: center;
+  font-size: 36px;
+  position: relative;
+  top: -5px;
+`;
+const DetailOverview = styled.p`
+  padding: 20px;
+  position: relative;
+  top: 0px;
+  color: ${(props) => props.theme.white.lighter};
 `;
 
 const rowVars = {
@@ -137,6 +179,12 @@ function Home(){
     const [leaving, setLeaving] = useState(false);
     const [page, setPage] = useState(0);
     const [back, setBack] = useState(false);
+
+
+    const navigate = useNavigate();
+    const bigMovieMatch: PathMatch<string> | null = useMatch(`${process.env.PUBLIC_URL}/movies/:id`)
+    
+    
     // 6개 Box 컴포넌트를 페이징 처리를 위해 offset 상수 선언
     const offset = 6;
 
@@ -172,6 +220,14 @@ function Home(){
     const toggleLeaving = () =>{
       setLeaving((prev) => !prev)
     }
+    const onBoxClicked = (movieId : number) => {
+      navigate(`${process.env.PUBLIC_URL}/movies/${movieId}`); // /movies/가져온 movie데이터 id로 이동
+    }
+    const onOverlayClick = () => {
+      navigate(-1);
+    }
+    const clickMovie = bigMovieMatch?.params.id && data?.results.find(movie => movie.id+"" === bigMovieMatch?.params.id)
+    console.log(clickMovie);
     
     return (
         <Wrapper>
@@ -209,8 +265,10 @@ function Home(){
                         // slice(0,6) >> slice(6,12) >> slice(12, 18) ... 로 data.results 배열값이 변하도록 설정
                         data?.results.slice(offset*page, offset*page+offset).map((movie) => (
                           <Box key = {movie.id}
+                               layoutId={movie.id + ""}
+                               onClick={() => onBoxClicked(movie.id)}
                                //makeImagePath id : movie.backdrop_path, format : "w500"
-                               bgPhoto={makeImagePath(movie.backdrop_path, "w500" || "")}
+                               bgPhoto={makeImagePath(movie.backdrop_path, "w500")}
                                variants={boxVars}
                                whileHover="hover"
                                initial = "normal"
@@ -227,6 +285,25 @@ function Home(){
                     <SliderBtn onClick={decresePage} isRight ={false}>◀</SliderBtn>
                   </AnimatePresence>
                 </Slider>
+                <AnimatePresence>
+                {bigMovieMatch ? (
+                <>
+                 <Overlay 
+                  onClick={onOverlayClick} 
+                  animate ={{ opacity : 1}}
+                  exit={{opacity : 0}}
+                  />
+                 <DetailMovie
+                    layoutId={bigMovieMatch.params.id}
+                >{
+                  clickMovie && <>
+                    <DetailCover src = {makeImagePath(clickMovie.backdrop_path)}/>
+                    <DetailTitle>{clickMovie.title}</DetailTitle>
+                    <DetailOverview>{clickMovie.overview}</DetailOverview>
+                  </>
+                }</DetailMovie>
+                </> ) : null}
+                </AnimatePresence>
               </>
             )
           }
