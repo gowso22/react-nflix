@@ -1,8 +1,8 @@
 import styled from "styled-components";
 import {motion, useAnimation, useScroll} from 'framer-motion'
-import { Link, useMatch } from "react-router-dom";
+import { Link, useMatch, useNavigate } from "react-router-dom";
 import { useEffect, useState } from "react";
-
+import {useForm} from 'react-hook-form'
 const Nav = styled(motion.nav)`
   display: flex;
   justify-content: space-between;
@@ -50,7 +50,7 @@ const Item = styled.li`
   }
 `;
 
-const Search = styled.span`
+const Search = styled.form`
   color: white;
   display: flex;
   align-items: center;
@@ -101,6 +101,11 @@ const navVars = {
   },
 }
 
+// form에서 사용될 타입 정의
+interface IForm {
+  keyword : string;
+}
+
 function Header() {
   const [searchOpen, setSearchOpen] = useState(false);
   const toggleSearch = () => {
@@ -120,6 +125,13 @@ function Header() {
         }
     })
   },[scrollY, navAnimation]);
+
+  const {register, handleSubmit} = useForm<IForm>();
+  const navigate = useNavigate();
+  const onValid = (data:IForm) => {
+    navigate(`${process.env.PUBLIC_URL}/search?keyword=${data.keyword}`);
+  }
+  
   return (
     <Nav
       variants={navVars} 
@@ -153,7 +165,7 @@ function Header() {
         </Items>
       </Col>
       <Col>
-        <Search >
+        <Search onSubmit={handleSubmit(onValid)}>
           <motion.svg
             onClick={toggleSearch}
             animate = {{x : searchOpen ? -200 : 0}}
@@ -169,6 +181,7 @@ function Header() {
             ></path>
           </motion.svg>
           <Input
+            {...register("keyword", {required : true, minLength : 2})}
             animate={{scaleX : searchOpen ? 1 : 0}} 
             initial = {{scaleX : 0}} 
             transition={{type: "linear"}}

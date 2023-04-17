@@ -1,5 +1,7 @@
 const API_KEY = "10923b261ba94d897ac6b81148314a3f";
 const BASE_PATH = "https://api.themoviedb.org/3";
+const BASE_LANG = 'ko-KR';
+const BASE_REGION = 'KR';
 
 interface IMovie {
   id: number;
@@ -23,7 +25,6 @@ export interface IGetMoviesResult {
 
 
 export function getMovies() {
-  return fetch(`${BASE_PATH}/movie/now_playing?api_key=${API_KEY}&language=ko`).then(
-    (res) => res.json()
-  );
+  return fetch(`${BASE_PATH}/movie/now_playing?api_key=${API_KEY}&language=${BASE_LANG}`)
+  .then((res) => res.json());
 }
