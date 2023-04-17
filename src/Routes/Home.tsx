@@ -2,7 +2,6 @@ import {useQuery} from 'react-query'
 import { IGetMoviesResult, getComingMovies, getNowMovies, getPopularMovies, getTopRatedMovies } from '../api';
 import styled from 'styled-components';
 import { makeImagePath } from '../utils';
-import NowSlider from '../Sliders/MovieSlider';
 import MovieSlider from '../Sliders/MovieSlider';
 
 

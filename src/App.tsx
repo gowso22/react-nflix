@@ -15,6 +15,7 @@ function App() {
         <Route path = {`${process.env.PUBLIC_URL}/tv`} element = {<Tv/>}></Route>
         <Route path = {`${process.env.PUBLIC_URL}/search`} element = {<Search/>}></Route>
         <Route path= {`${process.env.PUBLIC_URL}/movies/:id`} element ={<Home/>}/>
+        <Route path= {`${process.env.PUBLIC_URL}/tv/tvs/:id`} element ={<Tv/>}/>
       </Routes>
     </Router>
   );

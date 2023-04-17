@@ -3,7 +3,7 @@ import { useState } from "react";
 import { PathMatch, useMatch, useNavigate } from "react-router-dom";
 import styled from "styled-components";
 import { makeImagePath, makePosterPath } from "../utils";
-import { IDetialMovie, IGetMoviesResult, getMovieDetail } from "../api";
+import {  IDetialShow, IGetTvResult, getTvDetail} from "../api";
 import { useQuery } from "react-query";
 
 // 스타일 컴포넌트 파트
@@ -111,18 +111,13 @@ const DetailTitle = styled.h3`
   top: -20px;
   font-weight: bold;
 `;
-const DetailTag = styled.p`
-  position: relative;
-  top : -90px;
-  font-size: 18px;
-  padding: 15px;
-`
+
 
 const DetailOverview = styled.p`
   position: relative;
   top: -70px;
   font-size : 15px;
-  padding: 20px;
+  padding: 15px;
   color: ${(props) => props.theme.white.lighter};
   line-height: 135%;
 `;
@@ -184,12 +179,6 @@ const RateDiv =styled.div`
   top: -20px;
   margin-left: 20px;
 `
-const RuntimeDiv =styled.div`
-  position: relative;
-  top: 0px;
-  margin-left: 20px;
-`
-
 const SliderTitle = styled.span`
     font-size: 25px;
     font-weight: bold;
@@ -244,11 +233,11 @@ const rowVars = {
   }
 interface ISlider {
   title : string,
-  data  ?: IGetMoviesResult 
+  data  ?: IGetTvResult 
 }
 
 
-function MovieSlider({title, data} :ISlider){
+function TvSlider({title, data} :ISlider){
      
       // Row 컴포넌트가 사라지고 다시 생겨날때 Box들이 겹쳐보이는 것을 방지하기위해 leaving state 설정
       const [leaving, setLeaving] = useState(false);
@@ -257,7 +246,7 @@ function MovieSlider({title, data} :ISlider){
   
   
       const navigate = useNavigate();
-      const bigMovieMatch: PathMatch<string> | null = useMatch(`${process.env.PUBLIC_URL}/movies/:id`)
+      const bigMovieMatch: PathMatch<string> | null = useMatch(`${process.env.PUBLIC_URL}/tv/tvs/:id`)
       
       
       // 6개 Box 컴포넌트를 페이징 처리를 위해 offset 상수 선언
@@ -296,14 +285,14 @@ function MovieSlider({title, data} :ISlider){
         setLeaving((prev) => !prev)
       }
       const onBoxClicked = (movieId : number) => {
-        navigate(`${process.env.PUBLIC_URL}/movies/${movieId}`); // /movies/가져온 movie데이터 id로 이동
+        navigate(`${process.env.PUBLIC_URL}/tv/tvs/${movieId}`); // /movies/가져온 movie데이터 id로 이동
       }
       const onOverlayClick = () => {
         navigate(-1);
       }
       
-      const detailMovieId = bigMovieMatch?.params.id;
-      const {data:detailMovie} = useQuery<IDetialMovie>(["movie", detailMovieId], ()=>getMovieDetail(detailMovieId as any))
+      const detailTvId = bigMovieMatch?.params.id;
+      const {data:detailShow} = useQuery<IDetialShow>(["tv", detailTvId], ()=>getTvDetail(detailTvId as any))
      
       
   return(
@@ -340,7 +329,7 @@ function MovieSlider({title, data} :ISlider){
                                initial = "normal"
                                >
                             <Info variants={infoVars}>
-                              <h4>{movie.title}</h4>
+                              <h4>{movie.name}</h4>
                             </Info>
                           </Box>
                         ))
@@ -365,22 +354,20 @@ function MovieSlider({title, data} :ISlider){
                     animate = "visible"
                     exit = "exit"
                 >{
-                  detailMovie && <>
-                    <DetailCover bgImg = {makeImagePath(detailMovie.backdrop_path)}/>
-                    <DetailPoster bgPoster = {makePosterPath(detailMovie.poster_path)}></DetailPoster>
-                    <DetailTitle>{detailMovie.title}</DetailTitle>
-                    <ReleaseTag>{detailMovie.release_date}</ReleaseTag>
-                    {detailMovie.genres.map((g)=> <GenreTag>{g.name} </GenreTag>) }
-                    <DetailTag>{detailMovie.tagline}</DetailTag>
-                    <DetailOverview>{detailMovie.overview}</DetailOverview>
-                    {detailMovie.production_companies
+                    detailShow && <>
+                    <DetailCover bgImg = {makeImagePath(detailShow.backdrop_path)}/>
+                    <DetailPoster bgPoster = {makePosterPath(detailShow.poster_path)}></DetailPoster>
+                    <DetailTitle>{detailShow.name}</DetailTitle>
+                    <ReleaseTag>{detailShow.first_air_date}</ReleaseTag>
+                    {detailShow.genres.map((g)=> <GenreTag>{g.name} </GenreTag>) }
+                    <DetailOverview>{detailShow.overview}</DetailOverview>
+                    {detailShow.production_companies
                     .map((p) => 
                    
                       <DetailLogo bgLogo = { makeImagePath(p.logo_path, "w200")}></DetailLogo>
                     
                    )}
-                   <RateDiv>평점 : <SpanTag>{detailMovie.vote_average.toFixed(1)}</SpanTag></RateDiv>
-                   <RuntimeDiv>상영시간 : <SpanTag>{detailMovie.runtime}분</SpanTag></RuntimeDiv>
+                   <RateDiv>평점 : <SpanTag>{detailShow.vote_average.toFixed(1)}</SpanTag></RateDiv>
                   </>
                 }</DetailMovie>
                 </> ) : null}
@@ -391,4 +378,4 @@ function MovieSlider({title, data} :ISlider){
 
 }
 
-export default MovieSlider;
+export default TvSlider;
