@@ -114,3 +114,13 @@ export function getTvDetail(id: string) {
   return fetch(`${BASE_PATH}/tv/${id}?api_key=${API_KEY}`)
   .then((res) => res.json());
 }
+
+// search
+export function searchMovieResult(keyword: string) {
+  return fetch(`${BASE_PATH}/search/movie?api_key=${API_KEY}&language=${BASE_LANG}&query=${keyword}`)
+  .then((res) => res.json());
+}
+export function searchTvResult(keyword: string) {
+  return fetch(`${BASE_PATH}/search/tv?api_key=${API_KEY}&language=${BASE_LANG}&query=${keyword}`)
+  .then((res) => res.json());
+}
