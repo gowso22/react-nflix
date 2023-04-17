@@ -2,8 +2,8 @@ import { AnimatePresence, motion } from "framer-motion";
 import { useState } from "react";
 import { PathMatch, useMatch, useNavigate } from "react-router-dom";
 import styled from "styled-components";
-import { makeImagePath } from "../utils";
-import { IGetMoviesResult, getMovies } from "../api";
+import { makeImagePath, makePosterPath } from "../utils";
+import { IDetialMovie, IGetMoviesResult, getMovieDetail, getMovies } from "../api";
 import { useQuery } from "react-query";
 
 // 스타일 컴포넌트 파트
@@ -75,42 +75,100 @@ const Overlay = styled(motion.div)`
   height: 100%;
   background-color: rgba(0, 0, 0, 0.7);
   opacity: 0;
+  z-index: 99;
 `;
 
 const DetailMovie = styled(motion.div)`
   position: fixed;
-  width: 60vw;
-  height: 70vh;
-  background-color: white;
+  width: 800px;
+  height: 900px;
   top: 0;
   bottom: 0;
   left: 0;
   right: 0;
   margin: auto;
   background-color: ${props => props.theme.black.lighter};
+  border-radius: 15px;
+  z-index: 99;
+  overflow: hidden;
 `;
-
-const DetailCover = styled.img`
+// styled.img 태그를 쓰면 옆에 하얀 실선이 보임 >> div로 고침
+const DetailCover = styled.div<{bgImg : string}>`
   width : 100%;
-  height : 500px;
+  height : 400px;
   background-position: center center;
   background-size: cover;
+  border-radius: 15px;
+  background-image: linear-gradient(rgba(0, 0, 0, 0), rgba(0, 0, 0, 1)),
+    url(${(props) => props.bgImg});
 `;
 
 const DetailTitle = styled.h3`
   color: ${props => props.theme.white.lighter};
-  text-align: center;
-  font-size: 36px;
+  text-align: left;
+  font-size: 35px;
+  padding: 15px;
   position: relative;
-  top: -5px;
+  top: -20px;
+  font-weight: bold;
 `;
+const DetailTag = styled.p`
+  position: relative;
+  top : -50px;
+  font-size: 18px;
+  padding: 15px;
+`
 
 const DetailOverview = styled.p`
-  padding: 20px;
   position: relative;
-  top: 0px;
+  top: -30px;
+  font-size : 15px;
+  padding: 15px;
   color: ${(props) => props.theme.white.lighter};
+  line-height: 135%;
 `;
+
+const DetailPoster = styled.div<{bgPoster : string}>`
+  width: 250px;
+  height: 350px;
+  background-color: white;
+  position: relative;
+  top : -50px;
+  float: right;
+  margin-right: 20px;
+  background-size: cover;
+  background-image: url(${(props) => props.bgPoster});
+`;
+const DetailLogo = styled.img<{bgLogo : string}>`
+  width: 80px;
+  height: 30px;
+  margin: 0 10px;
+  background-size : contain;
+  background-repeat: no-repeat;
+  background-position: center;
+  background-image: url(${(props) => props.bgLogo});
+`;
+const GenreTag = styled.span`
+  position: relative;
+  top: -7.5em;
+  left: 0;
+  opacity: 0.7;
+  margin-left: 10px;
+  background-color: #273c75;
+  padding: 5px 10px;
+  border-radius: 10px;
+`;
+const SpanTag = styled.span`
+  opacity: 0.7;
+  margin-left: 10px;
+  background-color: #030a1b;
+  padding: 5px 10px;
+  border-radius: 10px;
+  
+`
+const TextDiv =styled.div`
+   margin: 20px 10px;
+`
 
 const SliderTitle = styled.span`
     font-size: 25px;
@@ -153,10 +211,20 @@ const rowVars = {
       }
     }
   }
+  const detailVars = {
+    start : {scale : 0},
+    visible : { scale : 1},
+    exit : {
+      scale : 0,
+      transition : {
+        duration : 0,
+      }
+    }
+  }
 
 
 function NowSlider(){
-      const {data} = useQuery<IGetMoviesResult>(["movies", "nowplaying"], getMovies)  
+      const {data:nowData} = useQuery<IGetMoviesResult>(["movies", "nowplaying"], getMovies)  
       // Row 컴포넌트가 사라지고 다시 생겨날때 Box들이 겹쳐보이는 것을 방지하기위해 leaving state 설정
       const [leaving, setLeaving] = useState(false);
       const [page, setPage] = useState(0);
@@ -171,7 +239,7 @@ function NowSlider(){
       const offset = 6;
   
       const incresePage = () => {
-        if(data){
+        if(nowData){
           if(leaving){
             return;
           }else{
@@ -179,7 +247,7 @@ function NowSlider(){
           }
           setBack(false)
           // 영화의 총 개수
-          const totalMovies = data?.results.length;
+          const totalMovies = nowData?.results.length;
           // 맨 마지막 페이지>> 올림을 설정을 하므로 잔여 영화 표시까지 보여줌
           // - 1 >> 첫 페이지의 page 값은 0이므로 올림 값에서 -1을 해줌
           const maxPage = Math.ceil(totalMovies / offset) - 1;
@@ -187,14 +255,14 @@ function NowSlider(){
           setPage((prev) => prev === maxPage ? 0 : prev+1)}
         }
       const decresePage = () => {
-          if(data){
+          if(nowData){
             if(leaving){
               return;
             }else{
               toggleLeaving();
             }
             setBack(true)
-            const totalMovies = data?.results.length;
+            const totalMovies = nowData?.results.length;
             const maxPage = Math.ceil(totalMovies / offset) - 1;
             setPage((prev) => prev === 0 ? maxPage : prev-1)}
           }
@@ -208,7 +276,9 @@ function NowSlider(){
       const onOverlayClick = () => {
         navigate(-1);
       }
-      const clickMovie = bigMovieMatch?.params.id && data?.results.find(movie => movie.id+"" === bigMovieMatch?.params.id)
+      
+      const detailMovieId = bigMovieMatch?.params.id;
+      const {data:detailMovie} = useQuery<IDetialMovie>(["movie", detailMovieId], ()=>getMovieDetail(detailMovieId as any))
      
       
   return(
@@ -235,7 +305,7 @@ function NowSlider(){
                       {
                         // 화면에 보여질 Box 컴포넌트는 6개(offset), 클릭시 page는 +1 하므로
                         // slice(0,6) >> slice(6,12) >> slice(12, 18) ... 로 data.results 배열값이 변하도록 설정
-                        data?.results.slice(offset*page, offset*page+offset).map((movie) => (
+                        nowData?.results.slice(offset*page, offset*page+offset).map((movie) => (
                           <Box key = {movie.id}
                                layoutId={movie.id + ""}
                                onClick={() => onBoxClicked(movie.id)}
@@ -266,12 +336,27 @@ function NowSlider(){
                   exit={{opacity : 0}}
                   />
                  <DetailMovie
+                    variants={detailVars}
+                    initial = "start"
+                    animate = "visible"
+                    exit = "exit"
                     layoutId={bigMovieMatch.params.id}
                 >{
-                  clickMovie && <>
-                    <DetailCover src = {makeImagePath(clickMovie.backdrop_path)}/>
-                    <DetailTitle>{clickMovie.title}</DetailTitle>
-                    <DetailOverview>{clickMovie.overview}</DetailOverview>
+                  detailMovie && <>
+                    <DetailCover bgImg = {makeImagePath(detailMovie.backdrop_path)}/>
+                    <DetailPoster bgPoster = {makePosterPath(detailMovie.poster_path)}></DetailPoster>
+                    <DetailTitle>{detailMovie.title}</DetailTitle>
+                    {detailMovie.genres.map((g)=> <GenreTag>{g.name} </GenreTag>) }
+                    <DetailTag>{detailMovie.tagline}</DetailTag>
+                    <DetailOverview>{detailMovie.overview}</DetailOverview>
+                    {detailMovie.production_companies
+                    .map((p) => 
+                   
+                      <DetailLogo bgLogo = { makeImagePath(p.logo_path, "w200")}></DetailLogo>
+                    
+                   )}
+                   <TextDiv>평점 : <SpanTag>{detailMovie.vote_average.toFixed(1)}</SpanTag></TextDiv>
+                   <TextDiv>상영시간 : <SpanTag>{detailMovie.runtime}분</SpanTag></TextDiv>
                   </>
                 }</DetailMovie>
                 </> ) : null}

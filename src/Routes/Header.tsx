@@ -14,6 +14,7 @@ const Nav = styled(motion.nav)`
   font-size: 14px;
   padding: 20px 60px;
   color: white;
+  z-index: 50;
 `;
 
 const Col = styled.div`
@@ -94,10 +95,10 @@ const logoVars = {
 
 const navVars = {
   top : {
-    backgroundColor : "rgba(0,0,0, 1)"
+    backgroundColor : "rgba(0,0,0, 0)"
   },
   scroll : {
-    backgroundColor : "rgba(0,0,0, 0)"
+    backgroundColor : "rgba(0,0,0, 1)"
   },
 }
 
