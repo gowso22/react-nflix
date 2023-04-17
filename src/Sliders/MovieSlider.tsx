@@ -3,13 +3,14 @@ import { useState } from "react";
 import { PathMatch, useMatch, useNavigate } from "react-router-dom";
 import styled from "styled-components";
 import { makeImagePath, makePosterPath } from "../utils";
-import { IDetialMovie, IGetMoviesResult, getMovieDetail, getMovies } from "../api";
+import { IDetialMovie, IGetMoviesResult, getMovieDetail, getNowMovies } from "../api";
 import { useQuery } from "react-query";
 
 // 스타일 컴포넌트 파트
 const Slider = styled.div`
   position: relative;
   top : -50px;
+  margin-bottom: 300px;
 `;
 
 const Row = styled(motion.div)`
@@ -25,7 +26,6 @@ const Box = styled(motion.div)<{bgPhoto : string}>`
   background-image: url(${(props) => props.bgPhoto});
   background-size: cover;
   height: 200px;
-  color: red;
   font-size: 35px;
   background-size: cover;
   background-position: center center;
@@ -95,10 +95,9 @@ const DetailMovie = styled(motion.div)`
 // styled.img 태그를 쓰면 옆에 하얀 실선이 보임 >> div로 고침
 const DetailCover = styled.div<{bgImg : string}>`
   width : 100%;
-  height : 400px;
+  height : 300px;
   background-position: center center;
   background-size: cover;
-  border-radius: 15px;
   background-image: linear-gradient(rgba(0, 0, 0, 0), rgba(0, 0, 0, 1)),
     url(${(props) => props.bgImg});
 `;
@@ -114,14 +113,14 @@ const DetailTitle = styled.h3`
 `;
 const DetailTag = styled.p`
   position: relative;
-  top : -50px;
+  top : -90px;
   font-size: 18px;
   padding: 15px;
 `
 
 const DetailOverview = styled.p`
   position: relative;
-  top: -30px;
+  top: -70px;
   font-size : 15px;
   padding: 15px;
   color: ${(props) => props.theme.white.lighter};
@@ -136,10 +135,13 @@ const DetailPoster = styled.div<{bgPoster : string}>`
   top : -50px;
   float: right;
   margin-right: 20px;
+  border-radius: 5px;
   background-size: cover;
   background-image: url(${(props) => props.bgPoster});
 `;
 const DetailLogo = styled.img<{bgLogo : string}>`
+  position: relative;
+  top: -50px;
   width: 80px;
   height: 30px;
   margin: 0 10px;
@@ -150,7 +152,7 @@ const DetailLogo = styled.img<{bgLogo : string}>`
 `;
 const GenreTag = styled.span`
   position: relative;
-  top: -7.5em;
+  top: -170px;
   left: 0;
   opacity: 0.7;
   margin-left: 10px;
@@ -158,20 +160,39 @@ const GenreTag = styled.span`
   padding: 5px 10px;
   border-radius: 10px;
 `;
+const ReleaseTag = styled.div`
+  width: 13%;
+  text-align: center;
+  position: relative;
+  top: -190px;
+  left: 0;
+  opacity: 0.7;
+  margin-left: 10px;
+  background-color: #273c75;
+  padding: 5px 10px;
+  border-radius: 10px;
+`
 const SpanTag = styled.span`
   opacity: 0.7;
   margin-left: 10px;
   background-color: #030a1b;
   padding: 5px 10px;
   border-radius: 10px;
-  
 `
-const TextDiv =styled.div`
-   margin: 20px 10px;
+const RateDiv =styled.div`
+  position: relative;
+  top: -20px;
+  margin-left: 20px;
+`
+const RuntimeDiv =styled.div`
+  position: relative;
+  top: 0px;
+  margin-left: 20px;
 `
 
 const SliderTitle = styled.span`
     font-size: 25px;
+    font-weight: bold;
     margin-left: 40px;
 `;
 
@@ -221,10 +242,14 @@ const rowVars = {
       }
     }
   }
+interface ISlider {
+  title : string,
+  data  ?: IGetMoviesResult 
+}
 
 
-function NowSlider(){
-      const {data:nowData} = useQuery<IGetMoviesResult>(["movies", "nowplaying"], getMovies)  
+function MovieSlider({title, data} :ISlider){
+     
       // Row 컴포넌트가 사라지고 다시 생겨날때 Box들이 겹쳐보이는 것을 방지하기위해 leaving state 설정
       const [leaving, setLeaving] = useState(false);
       const [page, setPage] = useState(0);
@@ -239,7 +264,7 @@ function NowSlider(){
       const offset = 6;
   
       const incresePage = () => {
-        if(nowData){
+        if(data){
           if(leaving){
             return;
           }else{
@@ -247,7 +272,7 @@ function NowSlider(){
           }
           setBack(false)
           // 영화의 총 개수
-          const totalMovies = nowData?.results.length;
+          const totalMovies = data?.results.length;
           // 맨 마지막 페이지>> 올림을 설정을 하므로 잔여 영화 표시까지 보여줌
           // - 1 >> 첫 페이지의 page 값은 0이므로 올림 값에서 -1을 해줌
           const maxPage = Math.ceil(totalMovies / offset) - 1;
@@ -255,14 +280,14 @@ function NowSlider(){
           setPage((prev) => prev === maxPage ? 0 : prev+1)}
         }
       const decresePage = () => {
-          if(nowData){
+          if(data){
             if(leaving){
               return;
             }else{
               toggleLeaving();
             }
             setBack(true)
-            const totalMovies = nowData?.results.length;
+            const totalMovies = data?.results.length;
             const maxPage = Math.ceil(totalMovies / offset) - 1;
             setPage((prev) => prev === 0 ? maxPage : prev-1)}
           }
@@ -285,7 +310,7 @@ function NowSlider(){
         <>
           
             <Slider>
-                <SliderTitle> 현재 상영 중 </SliderTitle>
+                <SliderTitle>{title}</SliderTitle>
                   {/* onExitComplete >> exit애니메이션이 끝났을 때 실행할 함수*/}
                   <AnimatePresence custom={back} initial = {false} onExitComplete={toggleLeaving}>
                     
@@ -305,12 +330,11 @@ function NowSlider(){
                       {
                         // 화면에 보여질 Box 컴포넌트는 6개(offset), 클릭시 page는 +1 하므로
                         // slice(0,6) >> slice(6,12) >> slice(12, 18) ... 로 data.results 배열값이 변하도록 설정
-                        nowData?.results.slice(offset*page, offset*page+offset).map((movie) => (
+                        data?.results.slice(offset*page, offset*page+offset).map((movie) => (
                           <Box key = {movie.id}
-                               layoutId={movie.id + ""}
                                onClick={() => onBoxClicked(movie.id)}
                                //makeImagePath id : movie.backdrop_path, format : "w500"
-                               bgPhoto={makeImagePath(movie.backdrop_path, "w500")}
+                               bgPhoto={makeImagePath(movie.backdrop_path || movie.poster_path, "w500")}
                                variants={boxVars}
                                whileHover="hover"
                                initial = "normal"
@@ -340,12 +364,12 @@ function NowSlider(){
                     initial = "start"
                     animate = "visible"
                     exit = "exit"
-                    layoutId={bigMovieMatch.params.id}
                 >{
                   detailMovie && <>
                     <DetailCover bgImg = {makeImagePath(detailMovie.backdrop_path)}/>
                     <DetailPoster bgPoster = {makePosterPath(detailMovie.poster_path)}></DetailPoster>
                     <DetailTitle>{detailMovie.title}</DetailTitle>
+                    <ReleaseTag>{detailMovie.release_date}</ReleaseTag>
                     {detailMovie.genres.map((g)=> <GenreTag>{g.name} </GenreTag>) }
                     <DetailTag>{detailMovie.tagline}</DetailTag>
                     <DetailOverview>{detailMovie.overview}</DetailOverview>
@@ -355,8 +379,8 @@ function NowSlider(){
                       <DetailLogo bgLogo = { makeImagePath(p.logo_path, "w200")}></DetailLogo>
                     
                    )}
-                   <TextDiv>평점 : <SpanTag>{detailMovie.vote_average.toFixed(1)}</SpanTag></TextDiv>
-                   <TextDiv>상영시간 : <SpanTag>{detailMovie.runtime}분</SpanTag></TextDiv>
+                   <RateDiv>평점 : <SpanTag>{detailMovie.vote_average.toFixed(1)}</SpanTag></RateDiv>
+                   <RuntimeDiv>상영시간 : <SpanTag>{detailMovie.runtime}분</SpanTag></RuntimeDiv>
                   </>
                 }</DetailMovie>
                 </> ) : null}
@@ -367,4 +391,4 @@ function NowSlider(){
 
 }
 
-export default NowSlider;
+export default MovieSlider;

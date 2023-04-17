@@ -1,11 +1,10 @@
 import {useQuery} from 'react-query'
-import { IGetMoviesResult, getMovies } from '../api';
+import { IGetMoviesResult, getComingMovies, getNowMovies, getPopularMovies, getTopRatedMovies } from '../api';
 import styled from 'styled-components';
 import { makeImagePath } from '../utils';
-import NowSlider from '../Sliders/NowSlider';
-import LastestSlider from '../Sliders/LatestSlider';
-import UpcomingSlider from '../Sliders/UpcomingSlider';
-import TopRatedSlider from '../Sliders/TopRatedSlider';
+import NowSlider from '../Sliders/MovieSlider';
+import MovieSlider from '../Sliders/MovieSlider';
+
 
 const Wrapper = styled.div`
   background: black;
@@ -43,26 +42,30 @@ const Overview = styled.p`
 
 
 function Home(){
-    const {data, isLoading} = useQuery<IGetMoviesResult>(["movies", "nowplaying"], getMovies)
+    const {data:nowData, isLoading:nowIsLoading} = useQuery<IGetMoviesResult>(["movies", "nowplaying"], getNowMovies)
+    const {data:popularData, isLoading:popularIsLoading} = useQuery<IGetMoviesResult>(["movies", "popular"], getPopularMovies)
+    const {data:topData, isLoading:topIsLoading} = useQuery<IGetMoviesResult>(["movies", "top"], getTopRatedMovies)
+    const {data:comingData, isLoading:comingIsLoading} = useQuery<IGetMoviesResult>(["movies", "coming"], getComingMovies)
   
+    const isLoading = nowIsLoading && popularIsLoading && topIsLoading && comingIsLoading
     return (
         <Wrapper>
             {isLoading ? <Loader>불어오는 중입니다...</Loader> :
             (
               <>
                 <Banner
-                  bgPhoto={makeImagePath(data?.results[0].backdrop_path || "")}>
-                    <Title>{data?.results[0].title}</Title>
+                  bgPhoto={makeImagePath(comingData?.results[0].backdrop_path || "")}>
+                    <Title>{comingData?.results[0].title}</Title>
                     <Overview>
-                        {Number(data?.results[0].overview.length) > 200
-                            ? `${data?.results[0].overview.slice(0,200)}...` 
-                            : data?.results[0].overview}
+                        {Number(comingData?.results[0].overview.length) > 200
+                            ? `${comingData?.results[0].overview.slice(0,200)}...` 
+                            : comingData?.results[0].overview}
                     </Overview>
                 </Banner>
-                <NowSlider/>
-                <LastestSlider/>
-                <UpcomingSlider/>
-                <TopRatedSlider/>         
+                <MovieSlider  title={'현재 상영 중!'} data={nowData}/>
+                <MovieSlider  title={'인기 영화'} data={popularData}/>
+                <MovieSlider  title={'높은 평점'} data={topData}/>
+                <MovieSlider  title={'UPCOMING!!!'} data={comingData}/>    
               </>
             )
           }
