@@ -1,5 +1,5 @@
 import { useLocation } from "react-router-dom";
-import { IGetMoviesResult, IGetTvResult, searchMovieResult, searchTvResult } from "../api";
+import { IGetMoviesResult, searchMovieResult, searchTvResult } from "../api";
 import { useQuery } from "react-query";
 import styled from "styled-components";
 import SearchResult from "../ResultSearch/SearchResult";
@@ -25,14 +25,15 @@ function Search(){
     console.log(keyword);
     // 검색한 keyword로 usequery를 사용하여 api데이터를 가져옴
     const { data: moviesData, isLoading: moviesLodaing } = useQuery<IGetMoviesResult>(["moviesearch", keyword], () =>searchMovieResult(keyword || ""));
-    const { data: tvsData, isLoading: tvsLodaing } = useQuery<IGetTvResult>(["tvsearch", keyword], () => searchTvResult(keyword || ""));
+    const { data: tvsData, isLoading: tvsLodaing } = useQuery<IGetMoviesResult>(["tvsearch", keyword], () => searchTvResult(keyword || ""));
     const isLoading = moviesLodaing || tvsLodaing;
     return (
         <Wrapper>
+          <div>"{keyword}"(으)로 검색한 결과입니다. </div>
         {isLoading ? <Loader>불어오는 중입니다...</Loader> :
         (   <>
-                <SearchResult search= {keyword} menu = {"Movie"} data = {moviesData}/>
-                <SearchResult search= {keyword} menu = {"TV Show"} data = {tvsData}/>
+                <SearchResult path = {"movies"} menu = {"영화"} data = {moviesData}/>
+                <SearchResult path = {"tv/tvs"} menu = {"TV 프로그램"} data = {tvsData}/>
             </>
             )}
         </Wrapper>

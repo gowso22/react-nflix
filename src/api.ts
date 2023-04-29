@@ -7,16 +7,11 @@ interface IMovie {
   backdrop_path: string;
   poster_path: string;
   title: string;
+  name : string;
   overview: string;
   release_date : string;
 }
-interface ITv {
-  id: number;
-  backdrop_path: string;
-  poster_path: string;
-  name: string;
-  overview: string;
-}
+
 
 export interface IGetMoviesResult {
   dates: {
@@ -28,14 +23,9 @@ export interface IGetMoviesResult {
   total_pages: number;
   total_results: number;
 }
-export interface IGetTvResult {
-  page: number;
-  results: ITv[];
-  total_pages: number;
-  total_results: number;
-}
 
-// 영화 상세 api 타입
+
+// 상세 api 타입
 export interface IDetialMovie{
   id: number;
   backdrop_path: string;
@@ -44,22 +34,12 @@ export interface IDetialMovie{
   overview: string;
   poster_path: string;
   release_date: string;
+  first_air_date: string;
   runtime: number;
   tagline: string;
   title: string;
   vote_average: number;
-}
-// Tv show 상세 api 타입
-export interface IDetialShow{
-  id: number;
-  backdrop_path: string;
-  genres: [{ id: number; name: string }];
-  production_companies : [{id: number; logo_path: string}];
-  overview: string;
-  poster_path: string;
-  first_air_date: string;
   name: string;
-  vote_average: number;
 }
 
 
@@ -111,7 +91,7 @@ export function getRateTvs() {
 }
 // tv디테일 정보
 export function getTvDetail(id: string) {
-  return fetch(`${BASE_PATH}/tv/${id}?api_key=${API_KEY}`)
+  return fetch(`${BASE_PATH}/tv/${id}?api_key=${API_KEY}&language=${BASE_LANG}`)
   .then((res) => res.json());
 }
 

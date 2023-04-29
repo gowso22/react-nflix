@@ -3,7 +3,7 @@ import { useState } from "react";
 import { PathMatch, useMatch, useNavigate } from "react-router-dom";
 import styled from "styled-components";
 import { makeImagePath, makePosterPath } from "../utils";
-import {  IDetialShow, IGetTvResult, getTvDetail} from "../api";
+import {  IDetialMovie, IGetMoviesResult, getTvDetail} from "../api";
 import { useQuery } from "react-query";
 
 // 스타일 컴포넌트 파트
@@ -233,7 +233,7 @@ const rowVars = {
   }
 interface ISlider {
   title : string,
-  data  ?: IGetTvResult 
+  data  ?: IGetMoviesResult 
 }
 
 
@@ -292,7 +292,7 @@ function TvSlider({title, data} :ISlider){
       }
       
       const detailTvId = bigMovieMatch?.params.id;
-      const {data:detailShow} = useQuery<IDetialShow>(["tv", detailTvId], ()=>getTvDetail(detailTvId as any))
+      const {data:detailShow} = useQuery<IDetialMovie>(["tv", detailTvId], ()=>getTvDetail(detailTvId as any))
      
       
   return(

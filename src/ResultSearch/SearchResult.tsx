@@ -1,13 +1,15 @@
 import { motion } from "framer-motion";
-import { IGetMoviesResult, IGetTvResult } from "../api";
+import { IGetMoviesResult} from "../api";
 import styled from "styled-components";
 import { makeImagePath } from "../utils";
+import { useMatch, useNavigate } from "react-router-dom";
+
 
 
 interface IResult{
-   search : string | null;
+   path : string | null;
    menu : string
-   data? : IGetMoviesResult | IGetTvResult
+   data ?: IGetMoviesResult | undefined;
 }
 
 const Wrapper = styled.div`
@@ -52,9 +54,52 @@ const Title = styled(motion.span)`
   opacity: 1;
 `;
 
+const Info = styled(motion.div)`
+  position: absolute;
+  padding: 10px;
+  background-color: rgba(0,0,0,0.5);
+  opacity: 0;
+  width: 100%;
+  bottom: 0;
+  color: ${(props) => props.theme.white.darker};;
+  h4{
 
-function SearchResult({data, search, menu}:IResult){
-    return(
+    text-align: center;
+    font-size: 13px;
+  }
+`;
+
+const posterVars = {
+  normal : {
+    scale : 1,
+  },
+  hover : {
+    scale : 1.2,
+    transition : {
+      delay : 0.5,
+      type : "tween",
+    }
+  }
+}
+const infoVars = {
+  hover : {
+    opacity : 1,
+    transition : {
+      delay : 0.5,
+      type : "tween",
+    }
+  }
+}
+
+function SearchResult({data, path, menu}:IResult){
+  const navigate = useNavigate();
+  
+
+  const onPosterClicked = (searchId : number) =>{
+    navigate(`${process.env.PUBLIC_URL}/${path}/${searchId}`)
+  }
+
+  return(
         <Wrapper>
         {data?.total_pages === 0 ? null : (
           <Box>
@@ -62,6 +107,10 @@ function SearchResult({data, search, menu}:IResult){
             <ResultBox>
               {data?.results.map((d) => (
                 <Poster
+                  variants={posterVars}
+                  initial = "normal"
+                  whileHover="hover"
+                  onClick={() => onPosterClicked(d.id)}
                   key={d.id}
                   style={{
                     backgroundImage: `url(${makeImagePath(
@@ -69,11 +118,15 @@ function SearchResult({data, search, menu}:IResult){
                     )})`,
                   }}
                 >
+                <Info variants={infoVars}>
+                  <h4>{d.title || d.name}</h4>
+                </Info>
                 </Poster>
               ))}
             </ResultBox>
           </Box>
         )}
+        
       </Wrapper>
     )
 }

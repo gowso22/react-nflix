@@ -1,7 +1,7 @@
 import { useQuery } from "react-query";
 import styled from "styled-components";
 import { makeImagePath } from "../utils";
-import { IGetTvResult, getOnTheAirTvs, getRateTvs, getTodayTvs, getpopularTvs } from "../api";
+import { IGetMoviesResult, getOnTheAirTvs, getRateTvs, getTodayTvs, getpopularTvs } from "../api";
 import TvSlider from "../Sliders/TvSlider";
 
 
@@ -41,10 +41,10 @@ const Overview = styled.p`
 
 
 function Tv(){
-    const {data:onairDate, isLoading : onAirLoading} = useQuery<IGetTvResult>(["tvs", "ontheair"], getOnTheAirTvs)
-    const {data:todayData, isLoading : todayLoading} = useQuery<IGetTvResult>(["tvs", "today"], getTodayTvs)
-    const {data:popularTvData, isLoading : popularLoading} = useQuery<IGetTvResult>(["tvs", "popularTv"], getpopularTvs)
-    const {data:TopRateData, isLoading : topRateLoading} = useQuery<IGetTvResult>(["tvs", "topRateTv"], getRateTvs)
+    const {data:onairDate, isLoading : onAirLoading} = useQuery<IGetMoviesResult>(["tvs", "ontheair"], getOnTheAirTvs)
+    const {data:todayData, isLoading : todayLoading} = useQuery<IGetMoviesResult>(["tvs", "today"], getTodayTvs)
+    const {data:popularTvData, isLoading : popularLoading} = useQuery<IGetMoviesResult>(["tvs", "popularTv"], getpopularTvs)
+    const {data:TopRateData, isLoading : topRateLoading} = useQuery<IGetMoviesResult>(["tvs", "topRateTv"], getRateTvs)
 
     const isLoading = onAirLoading && todayLoading && popularLoading && topRateLoading
     return (
