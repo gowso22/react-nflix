@@ -124,7 +124,7 @@ const DetailOverview = styled.p`
 
 const DetailPoster = styled.div<{bgPoster : string}>`
   width: 250px;
-  height: 350px;
+  height: 380px;
   background-color: white;
   position: relative;
   top : -50px;
